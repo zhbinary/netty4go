@@ -1,8 +1,8 @@
 package channel
 
 import (
-	"net"
 	"github.com/zhbinary/thor"
+	"net"
 )
 
 type TcpChannel struct {
@@ -13,24 +13,8 @@ type TcpChannel struct {
 	close   chan interface{}
 }
 
-func NewTcpChannel(s *thor.Server) *TcpChannel {
-	return &TcpChannel{server: s, readBuf: make([]byte, 4096), close: make(chan interface{})}
-}
-
-func (c *TcpChannel) Listen(server *thor.Server, addr string) error {
-	c.server = server
-	localAddr, _ := net.ResolveTCPAddr("tcp", addr)
-	listener, err := net.ListenTCP("tcp", localAddr)
-	if err != nil {
-		return err
-	}
-	conn, err := listener.AcceptTCP()
-	if err != nil {
-		return err
-	}
-	c.conn = conn
-	c.loop()
-	return nil
+func NewChannel(s *thor.Server, c *net.TCPConn) *TcpChannel {
+	return &TcpChannel{server: s, conn: c, readBuf: make([]byte, 4096), close: make(chan interface{})}
 }
 
 func (c *TcpChannel) loop() {

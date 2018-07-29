@@ -1,7 +1,7 @@
-package handler
+package base
 
 type ChannelHandler interface {
-	//handlerAdded()
-	//handlerRemoeved()
+	handlerAdded()
+	handlerRemoeved()
 	exceptionCaught(err error)
 }

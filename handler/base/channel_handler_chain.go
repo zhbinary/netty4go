@@ -1,4 +1,4 @@
-package handler
+package base
 
 import (
 	"container/list"
@@ -24,14 +24,28 @@ func (this *ChannelHandlerChain) AddLast(handler ChannelHandler) {
 	}
 }
 
-func (this *ChannelHandlerChain) ReadChain(bytes []byte) {
+func (this *ChannelHandlerChain) FireRead(bytes []byte) {
+	var data interface{}
+	data = bytes
 	for e := this.inboundList.Front(); e != nil; e = e.Next() {
-		(e.Value).(ChannelInboundHandler).channelRead(bytes)
+		ret, err := (e.Value).(ChannelInboundHandler).channelRead(data)
+		if err != nil {
+
+		}
+		data = ret
 	}
 }
 
-func (this *ChannelHandlerChain) WriteChain(msg interface{}) {
+func (this *ChannelHandlerChain) FireWrite(msg interface{}) {
+	var data interface{}
+	data = msg
 	for e := this.inboundList.Front(); e != nil; e = e.Next() {
-		(e.Value).(ChannelOutboundHandler).channelWrite(msg)
+		ret, err := (e.Value).(ChannelOutboundHandler).channelWrite(data)
+		if err != nil {
+
+		}
+		data = ret
 	}
 }
+
+
