@@ -3,11 +3,13 @@ package channel
 import (
 	"github.com/zhbinary/thor"
 	"net"
+	"github.com/zhbinary/thor/handler/base"
 )
 
 type TcpChannel struct {
 	server  *thor.Server
 	conn    *net.TCPConn
+	pipline *base.ChannelHandlerPipeline
 	readBuf []byte
 	outChan chan []byte
 	close   chan interface{}

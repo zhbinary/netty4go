@@ -10,9 +10,9 @@ import (
 type Server struct {
 	address      string
 	listener     *net.Listener
-	chain        *base.ChannelHandlerChain
+	chain        *base.ChannelHandlerPipeline
 	channel      *channel.TcpChannel
-	handlerChain *base.ChannelHandlerChain
+	handlerChain *base.ChannelHandlerPipeline
 	grMu         sync.Mutex
 	grWG         sync.WaitGroup
 }
@@ -55,7 +55,7 @@ func (s *Server) Sync() (*Server, error) {
 	return s, nil
 }
 
-func (s *Server) GetChain() *base.ChannelHandlerChain {
+func (s *Server) GetChain() *base.ChannelHandlerPipeline {
 	return s.chain
 }
 
