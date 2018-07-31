@@ -36,6 +36,10 @@ func newTail() *ChannelHandlerContext {
 	return &ChannelHandlerContext{}
 }
 
+func (this *ChannelHandlerPipeline) FireChannelRead() {
+
+}
+
 //func (this *ChannelHandlerPipeline) AddLast(handler ChannelHandler) {
 //	switch handler.(type) {
 //	case ChannelInboundHandler:
