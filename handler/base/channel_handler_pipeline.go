@@ -36,45 +36,30 @@ func newTail() *ChannelHandlerContext {
 	return &ChannelHandlerContext{}
 }
 
-func (this *ChannelHandlerPipeline) FireChannelRead() {
+func (this *ChannelHandlerPipeline) FireChannelRead(msg interface{}) {
+	this.head.FireChannelRead(msg)
+}
+
+func (this *ChannelHandlerPipeline) FireChannelReadComplete() {
 
 }
 
-//func (this *ChannelHandlerPipeline) AddLast(handler ChannelHandler) {
-//	switch handler.(type) {
-//	case ChannelInboundHandler:
-//		this.inboundList.PushBack(handler)
-//		break
-//	case ChannelOutboundHandler:
-//		this.outboundList.PushBack(handler)
-//		break
-//	}
-//}
-//
-//func (this *ChannelHandlerPipeline) FireRead(bytes []byte) {
-//	var data interface{}
-//	data = bytes
-//	for e := this.inboundList.Front(); e != nil; e = e.Next() {
-//		ret, err := (e.Value).(ChannelInboundHandler).channelRead(data)
-//		if err != nil {
-//
-//		}
-//		data = ret
-//	}
-//}
-//
-//func (this *ChannelHandlerPipeline) FireWrite(msg interface{}) {
-//	var data interface{}
-//	data = msg
-//	for e := this.inboundList.Front(); e != nil; e = e.Next() {
-//		ret, err := (e.Value).(ChannelOutboundHandler).channelWrite(data)
-//		if err != nil {
-//
-//		}
-//		data = ret
-//	}
-//}
-//
-//func Fire(i interface{})  {
-//
-//}
+func (this *ChannelHandlerPipeline) FireChannelConnected() {
+
+}
+
+func (this *ChannelHandlerPipeline) FireChannelDisconnected() {
+
+}
+
+func (this *ChannelHandlerPipeline) FireUserEventTriggered(evnt interface{}) {
+
+}
+
+func (this *ChannelHandlerPipeline) FireExceptionCaught(err error) {
+
+}
+
+func (this *ChannelHandlerPipeline) write(msg interface{}) {
+
+}

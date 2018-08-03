@@ -2,10 +2,10 @@ package base
 
 type ChannelInboundHandler interface {
 	ChannelHandler
-	channelRead(ctx *ChannelHandlerContext, data interface{}) error
-	channelReadComplete(ctx *ChannelHandlerContext)
-	channelConnected(ctx *ChannelHandlerContext)
-	channelDisconnected(ctx *ChannelHandlerContext)
-	userEventTriggered(ctx *ChannelHandlerContext, evnt interface{})
-	exceptionCaught(ctx *ChannelHandlerContext, err error)
+	ChannelRead(ctx *ChannelHandlerContext, data interface{})
+	ChannelReadComplete(ctx *ChannelHandlerContext)
+	ChannelConnected(ctx *ChannelHandlerContext)
+	ChannelDisconnected(ctx *ChannelHandlerContext)
+	UserEventTriggered(ctx *ChannelHandlerContext, evnt interface{})
+	ExceptionCaught(ctx *ChannelHandlerContext, err error)
 }
