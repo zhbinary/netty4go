@@ -4,7 +4,7 @@ package types
 
 type Promise interface {
 	Future
-	SetSuccess(i interface{}) bool
-	SetFailure(err error) bool
-	SetUncancellable() bool
+	SetSuccess(i interface{})
+	SetFailure(e error)
+	Cancel()
 }

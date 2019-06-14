@@ -29,7 +29,7 @@ func (this *ServerSocketChannel) pollReadReady() {
 			// Close channel
 			return
 		}
-		this.Pipeline().FireChannelRead(nfd)
+		Pipeline().FireChannelRead(nfd)
 	}
-	this.Pipeline().FireChannelReadComplete()
+	Pipeline().FireChannelReadComplete()
 }

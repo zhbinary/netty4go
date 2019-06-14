@@ -31,18 +31,18 @@ func (this *SocketChannel) pollReadReady() {
 			// Error occur, Close channel
 			return
 		}
-		this.Pipeline().FireChannelRead(this.readByteBuf)
+		Pipeline().FireChannelRead(this.readByteBuf)
 	}
-	this.Pipeline().FireChannelReadComplete()
+	Pipeline().FireChannelReadComplete()
 }
 
 func (this *SocketChannel) pollWriteReady() {
-	this.Pipeline().FireChannelWritabilityChanged()
+	Pipeline().FireChannelWritabilityChanged()
 	for {
 		if this.writeByteBuf.ReadableBytes() == 0 {
 			return
 		}
-		n, err := syscall.Write(this.Fd(), this.writeByteBuf.ReadableArray())
+		n, err := syscall.Write(Fd(), this.writeByteBuf.ReadableArray())
 		if err != nil {
 			if err == syscall.EAGAIN {
 				// Wait for next turn

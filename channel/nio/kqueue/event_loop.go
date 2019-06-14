@@ -58,11 +58,11 @@ func (this *EventLoop) run() {
 		case task := <-this.ch:
 			task()
 		default:
-			this.netPoll.PollWait(func(fd uint64, filter int16, data interface{}) {
+			PollWait(func(fd uint64, filter int16, data interface{}) {
 				if filter == syscall.EVFILT_READ {
-					this.channels[fd].pollReadReady()
+					pollReadReady()
 				} else if filter == syscall.EVFILT_WRITE {
-					this.channels[fd].pollWriteReady()
+					pollWriteReady()
 				}
 			})
 		}
@@ -70,17 +70,17 @@ func (this *EventLoop) run() {
 }
 
 func (this *EventLoop) add(channel *AbstractSocketChannel) error {
-	this.channels[channel.Fd()] = channel
-	this.netPoll.PollAddRead(channel.Fd())
+	this.channels[Fd()] = channel
+	PollAddRead(Fd())
 	return nil
 }
 
 func (this *EventLoop) mod(channel *AbstractSocketChannel) error {
-	this.netPoll.PollAddRead(channel.Fd())
+	PollAddRead(Fd())
 	return nil
 }
 
 func (this *EventLoop) del(channel *AbstractSocketChannel) error {
-	delete(this.channels, channel.Fd())
+	delete(this.channels, Fd())
 	return nil
 }

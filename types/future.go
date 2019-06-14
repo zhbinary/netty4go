@@ -4,18 +4,32 @@ package types
 
 import "time"
 
+// Timeout:
+// Completed: success,failed,canceled
 type Future interface {
-	IsSuccess() bool
-	Error() error
-	AddListener(cb FutureCallback)
-	RemoveListener(cb FutureCallback)
-	Get() interface{}
-	Get1(duration time.Duration) interface{}
-	GetNow() interface{}
-	Cancel() bool
-	IsCancellable() bool
-	IsCancelled() bool
-	IsDone() bool
+	Error() (err error)
+	AddListener(cb FutureListener)
+	RemoveListener(cb FutureListener)
+	Get() (i interface{})
+	Get0(duration time.Duration) (i interface{}, b bool)
+	GetNow() (i interface{})
+	Wait()
+	Wait0(duration time.Duration) (b bool)
+	IsSuccess() (b bool)
+	IsCancelled() (b bool)
+	IsDone() (b bool)
 }
 
-type FutureCallback func(future Future)
+type FutureListener interface {
+	OperationComplete(future Future)
+}
+
+type FutureListenerAdapter struct {
+	OperationCompleteCb func(future Future)
+}
+
+func (this *FutureListenerAdapter) OperationComplete(future Future) {
+	if this.OperationComplete != nil {
+		this.OperationCompleteCb(future)
+	}
+}

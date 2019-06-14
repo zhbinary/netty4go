@@ -3,7 +3,6 @@
 package concurrent
 
 import (
-	"context"
 	"github.com/zhbinary/heng/types"
 	"sync"
 	"sync/atomic"
@@ -11,9 +10,7 @@ import (
 )
 
 const (
-	PromiseStatusIncompletedCancelable = iota
-	PromiseStatusIncompletedUncancelable
-	PromiseStatusIncompletedWaiting
+	PromiseStatusIncompletedNew = iota
 	PromiseStatusCompletedSucceed
 	PromiseStatusCompletedFailed
 	PromiseStatusCompletedCanceled
@@ -22,14 +19,13 @@ const (
 type AbstractPromise struct {
 	result    interface{}
 	status    int32
-	done      chan interface{}
-	cancel    context.CancelFunc
 	callbacks sync.Map
 	once      sync.Once
+	done      chan struct{}
 }
 
 func NewAbstractPromise() *AbstractPromise {
-	return &AbstractPromise{done: make(chan interface{}), status: PromiseStatusIncompletedCancelable}
+	return &AbstractPromise{done: make(chan struct{}), status: PromiseStatusIncompletedNew}
 }
 
 func (this *AbstractPromise) IsSuccess() bool {
@@ -43,46 +39,51 @@ func (this *AbstractPromise) Error() (err error) {
 	return
 }
 
-func (this *AbstractPromise) AddListener(listener types.FutureCallback) {
-	this.callbacks.Store(listener, listener)
+func (this *AbstractPromise) AddListener(cb types.FutureListener) {
+	if cb != nil {
+		this.callbacks.Store(cb, cb)
+	}
 }
 
-func (this *AbstractPromise) RemoveListener(listener types.FutureCallback) {
-	this.callbacks.Delete(listener)
+func (this *AbstractPromise) RemoveListener(cb types.FutureListener) {
+	if cb != nil {
+		this.callbacks.Delete(cb)
+	}
 }
 
 func (this *AbstractPromise) Get() interface{} {
+	//if atomic.CompareAndSwapInt32(&this.status, PromiseStatusIncompletedNew, PromiseStatusIncompletedWaiting) {
+	//}
 	this.await()
 	return this.result
 }
 
-func (this *AbstractPromise) Get1(duration time.Duration) interface{} {
-	this.await0(duration)
-	return this.result
+func (this *AbstractPromise) Get0(duration time.Duration) (i interface{}, b bool) {
+	//if atomic.CompareAndSwapInt32(&this.status, PromiseStatusIncompletedNew, PromiseStatusIncompletedWaiting) {
+	//}
+	return this.result, this.await0(duration)
 }
 
 func (this *AbstractPromise) GetNow() interface{} {
 	return this.result
 }
 
-func (this *AbstractPromise) Cancel() (b bool) {
-	if this.cancel != nil && atomic.CompareAndSwapInt32(&this.status, PromiseStatusIncompletedCancelable, PromiseStatusCompletedCanceled) {
-		this.cancel()
-		this.notifyAll()
-		return true
-	}
-	return
+func (this *AbstractPromise) Wait() {
+	this.await()
 }
 
-func (this *AbstractPromise) SetUncancellable() bool {
-	if atomic.CompareAndSwapInt32(&this.status, PromiseStatusIncompletedCancelable, PromiseStatusIncompletedUncancelable) {
-		return true
+func (this *AbstractPromise) Wait0(duration time.Duration) (b bool) {
+	return this.await0(duration)
+}
+
+func (this *AbstractPromise) Cancel() {
+	if atomic.CompareAndSwapInt32(&this.status, PromiseStatusIncompletedNew, PromiseStatusCompletedCanceled) {
+		this.notifyAllWaiters()
 	}
-	return !this.IsDone() || !this.IsCancelled()
 }
 
 func (this *AbstractPromise) IsCancellable() bool {
-	return this.status == PromiseStatusIncompletedCancelable
+	return this.status == PromiseStatusIncompletedNew
 }
 
 func (this *AbstractPromise) IsCancelled() bool {
@@ -94,59 +95,50 @@ func (this *AbstractPromise) IsDone() bool {
 }
 
 func (this *AbstractPromise) await() {
-	this.once.Do(func() {
-		this.await0(-1)
-	})
+	<-this.done
 }
 
-func (this *AbstractPromise) await0(duration time.Duration) {
-	if this.IsDone() {
-		return
+func (this *AbstractPromise) await0(duration time.Duration) (b bool) {
+	timer := time.NewTimer(duration)
+	select {
+	case <-this.done:
+		if !timer.Stop() {
+			<-timer.C
+		}
+		return true
+	case <-timer.C:
 	}
-
-	var ctx context.Context
-	if duration == -1 {
-		ctx, this.cancel = context.WithCancel(context.TODO())
-	} else {
-		ctx, this.cancel = context.WithTimeout(context.TODO(), duration)
-	}
-
-	<-ctx.Done()
-	this.nofityListeners()
+	return false
 }
 
-func (this *AbstractPromise) SetSuccess(i interface{}) (b bool) {
-	if atomic.CompareAndSwapInt32(&this.status, PromiseStatusIncompletedCancelable, PromiseStatusCompletedSucceed) ||
-		atomic.CompareAndSwapInt32(&this.status, PromiseStatusIncompletedUncancelable, PromiseStatusCompletedSucceed) {
+func (this *AbstractPromise) SetSuccess(i interface{}) {
+	if atomic.CompareAndSwapInt32(&this.status, PromiseStatusIncompletedNew, PromiseStatusCompletedSucceed) {
 		this.result = i
-		this.notifyAll()
-		this.nofityListeners()
-		return true
+		this.notifyAllWaiters()
+		this.notifyListeners()
 	}
-	return
 }
 
-func (this *AbstractPromise) SetFailure(err error) (b bool) {
-	if atomic.CompareAndSwapInt32(&this.status, PromiseStatusIncompletedCancelable, PromiseStatusCompletedFailed) ||
-		atomic.CompareAndSwapInt32(&this.status, PromiseStatusIncompletedUncancelable, PromiseStatusCompletedFailed) {
+func (this *AbstractPromise) SetFailure(err error) {
+	if atomic.CompareAndSwapInt32(&this.status, PromiseStatusIncompletedNew, PromiseStatusCompletedFailed) {
 		this.result = err
-		this.notifyAll()
-		this.nofityListeners()
-		return true
-	}
-	return
-}
-
-func (this *AbstractPromise) notifyAll() {
-	if this.cancel != nil {
-		this.cancel()
+		this.notifyAllWaiters()
+		this.notifyListeners()
 	}
 }
 
-func (this *AbstractPromise) nofityListeners() {
+func (this *AbstractPromise) notifyAllWaiters() {
+	select {
+	case <-this.done:
+	default:
+		close(this.done)
+	}
+}
+
+func (this *AbstractPromise) notifyListeners() {
 	this.callbacks.Range(func(key, value interface{}) bool {
-		if cb, ok := value.(types.FutureCallback); ok {
-			cb(this)
+		if l, ok := value.(types.FutureListener); ok {
+			l.OperationComplete(this)
 		}
 		return true
 	})
