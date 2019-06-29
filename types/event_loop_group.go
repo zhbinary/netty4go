@@ -3,9 +3,11 @@ package types
 
 type EventLoopGroup interface {
 	IsShutDown() bool
-	ShutdownGracefully(promise ChannelPromise) Future
-	AwaitTermination() bool
+	ShutdownGracefully() ChannelFutrue
 	Next() EventLoop
-	Register(channel Channel, promise ChannelPromise) ChannelFutrue
-	Execute(task Task, promise ChannelPromise) Future
+	Register(channel Channel) ChannelFutrue
+	Register0(promise ChannelPromise) ChannelFutrue
+	Register1(channel Channel, promise ChannelPromise) ChannelFutrue
+	Submit(task Runnable) Future
+	Execute(task Runnable)
 }

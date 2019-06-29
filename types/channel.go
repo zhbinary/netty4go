@@ -5,10 +5,19 @@ import (
 )
 
 type Channel interface {
+	BaseChannel
 	ChannelOutboundInvoker
+
 	/**
-     * Returns the globally unique identifier of this {@link Channel}.
-     */
+	 * Returns an <em>internal-use-only</em> object that provides unsafe operations.
+	 */
+	Unsafe() Unsafe
+}
+
+type BaseChannel interface {
+	/**
+	 * Returns the globally unique identifier of this {@link Channel}.
+	 */
 	Id() string
 
 	/**
@@ -25,8 +34,8 @@ type Channel interface {
 	Parent() Channel
 
 	/**
-     * Returns {@code true} if the {@link Channel} is open and may get active later
-     */
+	 * Returns {@code true} if the {@link Channel} is open and may get active later
+	 */
 	IsOpen() bool
 
 	/**
@@ -40,14 +49,14 @@ type Channel interface {
 	IsActive() bool
 
 	/**
-     * Returns the local address where this channel is bound to.  The returned
-     * {@link SocketAddress} is supposed to be down-cast into more concrete
-     * type such as {@link InetSocketAddress} to retrieve the detailed
-     * information.
-     *
-     * @return the local address of this channel.
-     *         {@code null} if this channel is not bound.
-     */
+	 * Returns the local address where this channel is bound to.  The returned
+	 * {@link SocketAddress} is supposed to be down-cast into more concrete
+	 * type such as {@link InetSocketAddress} to retrieve the detailed
+	 * information.
+	 *
+	 * @return the local address of this channel.
+	 *         {@code null} if this channel is not bound.
+	 */
 	LocalAddress() net.Addr
 
 	/**
@@ -67,61 +76,35 @@ type Channel interface {
 	RemoteAddress() net.Addr
 
 	/**
-     * Returns {@code true} if and only if the I/O thread will perform the
-     * requested write operation immediately.  Any write requests made when
-     * this method returns {@code false} are queued until the I/O thread is
-     * ready to process the queued write requests.
-     */
+	 * Returns {@code true} if and only if the I/O thread will perform the
+	 * requested write operation immediately.  Any write requests made when
+	 * this method returns {@code false} are queued until the I/O thread is
+	 * ready to process the queued write requests.
+	 */
 	IsWritable() bool
 
 	/**
-     * Returns an <em>internal-use-only</em> object that provides unsafe operations.
-     */
-	Unsafe() Unsafe
-
-	Config() ChannelConfig
-
-	/**
-     * Return the assigned {@link DefaultChannelPipeline}.
-     */
+	 * Return the assigned {@link DefaultChannelPipeline}.
+	 */
 	Pipeline() ChannelPipeline
 
-	localAddress() net.Addr
-	remoteAddress() net.Addr
-	newUnsafe() Unsafe
-	doRegister() error
-	doDeRegister() error
-	doBind(localAddress net.Addr) error
-	doConnect(localAddress net.Addr, remoteAddress net.Addr) error
-	doDisconnect() error
-	doClose() error
-	doBeginRead() error
+	Config() ChannelConfig
 }
 
 type Unsafe interface {
-	/**
-	 * Return the {@link SocketAddress} to which is bound local or
-	 * {@code null} if none.
-	 */
-	LocalAddress() net.Addr
-
-	/**
-	 * Return the {@link SocketAddress} to which is bound remote or
-	 * {@code null} if none is bound yet.
-	 */
-	RemoteAddress() net.Addr
+	BaseChannel
 
 	/**
 	 * Register the {@link Channel} of the {@link ChannelPromise} and notify
 	 * the {@link ChannelFuture} once the registration was complete.
 	 */
-	Register(eventLoop EventLoop, promise Promise)
+	Register(eventLoop EventLoop, promise ChannelPromise)
 
 	/**
 	 * Bind the {@link SocketAddress} to the {@link Channel} of the {@link ChannelPromise} and notify
 	 * it once its done.
 	 */
-	Bind(localAddress net.Addr, promise Promise)
+	Bind(localAddress net.Addr, promise ChannelPromise)
 
 	/**
 	 * Connect the {@link Channel} of the given {@link ChannelFuture} with the given remote {@link SocketAddress}.
@@ -130,19 +113,19 @@ type Unsafe interface {
 	 *
 	 * The {@link ChannelPromise} will get notified once the connect operation was complete.
 	 */
-	Connect(remoteAddress net.Addr, localAddress net.Addr, promise Promise)
+	Connect(remoteAddress net.Addr, localAddress net.Addr, promise ChannelPromise)
 
 	/**
 	 * Disconnect the {@link Channel} of the {@link ChannelFuture} and notify the {@link ChannelPromise} once the
 	 * operation was complete.
 	 */
-	Disconnect(promise Promise)
+	Disconnect(promise ChannelPromise)
 
 	/**
 	 * Close the {@link Channel} of the {@link ChannelPromise} and notify the {@link ChannelPromise} once the
 	 * operation was complete.
 	 */
-	Close(promise Promise)
+	Close(promise ChannelPromise)
 
 	/**
 	 * Closes the {@link Channel} immediately without firing any events.  Probably only useful
@@ -154,7 +137,7 @@ type Unsafe interface {
 	 * Deregister the {@link Channel} of the {@link ChannelPromise} from {@link EventLoop} and notify the
 	 * {@link ChannelPromise} once the operation was complete.
 	 */
-	Deregister(promise Promise)
+	Deregister(promise ChannelPromise)
 
 	/**
 	 * Schedules a read operation that fills the inbound buffer of the first {@link ChannelInboundHandler} in the
@@ -165,7 +148,7 @@ type Unsafe interface {
 	/**
 	 * Schedules a write operation.
 	 */
-	Write(msg interface{}, promise Promise)
+	Write(msg interface{}, promise ChannelPromise)
 
 	/**
 	 * Flush out all write operations scheduled via {@link #write(Object, ChannelPromise)}.

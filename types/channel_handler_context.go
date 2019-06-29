@@ -7,7 +7,7 @@ type ChannelHandlerContext interface {
 	ChannelOutboundInvoker
 	/**
 	* Return the {@link Channel} which is bound to the {@link ChannelHandlerContext}.
-	*/
+	 */
 	Channel() Channel
 
 	/**
@@ -37,10 +37,6 @@ type ChannelHandlerContext interface {
 	 * Return the assigned {@link DefaultChannelPipeline}
 	 */
 	Pipeline() ChannelPipeline
-
-	Next() ChannelHandlerContext
-
-	Prev() ChannelHandlerContext
 
 	IsInbound() bool
 

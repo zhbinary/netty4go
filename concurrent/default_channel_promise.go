@@ -11,8 +11,8 @@ type DefaultChannelPromise struct {
 	channel types.Channel
 }
 
-func NewDefaultChannelPromise() types.ChannelPromise {
-	return &DefaultChannelPromise{AbstractPromise: NewAbstractPromise()}
+func NewDefaultChannelPromise(channel types.Channel) types.ChannelPromise {
+	return &DefaultChannelPromise{AbstractPromise: NewAbstractPromise(), channel: channel}
 }
 
 func (this *DefaultChannelPromise) Channel() types.Channel {

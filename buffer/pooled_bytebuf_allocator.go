@@ -13,7 +13,7 @@ type PooledByteBufAllocator struct {
 
 func NewPooledByteBufAllocator(maxCapacity int) *PooledByteBufAllocator {
 	return &PooledByteBufAllocator{pool: &sync.Pool{New: func() interface{} {
-		return NewHeadpBytebuf(maxCapacity)
+		return NewHeapBytebuf(maxCapacity)
 	}}}
 }
 

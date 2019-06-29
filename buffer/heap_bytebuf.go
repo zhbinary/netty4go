@@ -18,7 +18,7 @@ type HeapByteBuf struct {
 	allocator         types.ByteBufAllocator
 }
 
-func NewHeadpBytebuf(capacity int) types.ByteBuf {
+func NewHeapBytebuf(capacity int) types.ByteBuf {
 	return &HeapByteBuf{buf: make([]byte, capacity), maxCapacity: capacity}
 }
 

@@ -3,13 +3,13 @@
 package types
 
 type ChannelInboundInvoker interface {
-	FireChannelRegistered() ChannelInboundInvoker
-	FireChannelUnregistered() ChannelInboundInvoker
-	FireChannelActive() ChannelInboundInvoker
-	FireChannelInactive() ChannelInboundInvoker
-	FireExceptionCaught(err error) ChannelInboundInvoker
-	FireUserEventTriggered(evt interface{}) ChannelInboundInvoker
-	FireChannelRead(msg interface{}) ChannelInboundInvoker
-	FireChannelReadComplete() ChannelInboundInvoker
-	FireChannelWritabilityChanged() ChannelInboundInvoker
+	FireChannelRegistered()
+	FireChannelUnregistered()
+	FireChannelActive()
+	FireChannelInactive()
+	FireExceptionCaught(err error)
+	FireUserEventTriggered(evt interface{})
+	FireChannelRead(msg interface{})
+	FireChannelReadComplete()
+	FireChannelWritabilityChanged()
 }

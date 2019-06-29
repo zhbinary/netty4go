@@ -18,32 +18,32 @@ type AbstractSocketChannel struct {
 	channelConfig types.ChannelConfig
 }
 
-func (this *AbstractSocketChannel) Bind(localAddress net.Addr, promise types.Promise) types.Future {
-	return this.pipeline.Bind(localAddress, promise)
+func (this *AbstractSocketChannel) Bind(localAddress net.Addr, promise types.ChannelPromise) types.Future {
+	return this.pipeline.Bind0(localAddress, promise)
 }
 
-func (this *AbstractSocketChannel) Connect(localAddress net.Addr, remoteAddress net.Addr, promise types.Promise) types.Future {
-	return this.pipeline.Connect(localAddress, remoteAddress, promise)
+func (this *AbstractSocketChannel) Connect(localAddress net.Addr, remoteAddress net.Addr, promise types.ChannelPromise) types.Future {
+	return this.pipeline.Connect0(localAddress, remoteAddress, promise)
 }
 
-func (this *AbstractSocketChannel) Disconnect(promise types.Promise) types.Future {
-	return this.pipeline.Disconnect(promise)
+func (this *AbstractSocketChannel) Disconnect(promise types.ChannelPromise) types.Future {
+	return this.pipeline.Disconnect0(promise)
 }
 
-func (this *AbstractSocketChannel) Close(promise types.Promise) types.Future {
-	return this.pipeline.Close(promise)
+func (this *AbstractSocketChannel) Close(promise types.ChannelPromise) types.Future {
+	return this.pipeline.Close0(promise)
 }
 
-func (this *AbstractSocketChannel) Deregister(promise types.Promise) types.Future {
-	return this.pipeline.Deregister(promise)
+func (this *AbstractSocketChannel) Deregister(promise types.ChannelPromise) types.Future {
+	return this.pipeline.Deregister0(promise)
 }
 
-func (this *AbstractSocketChannel) Write(msg interface{}, promise types.Promise) types.Future {
-	return this.pipeline.Write(msg, promise)
+func (this *AbstractSocketChannel) Write(msg interface{}, promise types.ChannelPromise) types.Future {
+	return this.pipeline.Write0(msg, promise)
 }
 
-func (this *AbstractSocketChannel) WriteAndFlush(msg interface{}, promise types.Promise) types.Future {
-	return this.pipeline.WriteAndFlush(msg, promise)
+func (this *AbstractSocketChannel) WriteAndFlush(msg interface{}, promise types.ChannelPromise) types.Future {
+	return this.pipeline.WriteAndFlush0(msg, promise)
 }
 
 func (this *AbstractSocketChannel) Flush() {

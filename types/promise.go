@@ -4,7 +4,8 @@ package types
 
 type Promise interface {
 	Future
-	SetSuccess(i interface{})
+	SetSuccess()
+	SetSuccess0(i interface{})
 	SetFailure(e error)
 	Cancel()
 }

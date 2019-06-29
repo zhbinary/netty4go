@@ -111,7 +111,11 @@ func (this *AbstractPromise) await0(duration time.Duration) (b bool) {
 	return false
 }
 
-func (this *AbstractPromise) SetSuccess(i interface{}) {
+func (this *AbstractPromise) SetSuccess() {
+	this.SetSuccess0(nil)
+}
+
+func (this *AbstractPromise) SetSuccess0(i interface{}) {
 	if atomic.CompareAndSwapInt32(&this.status, PromiseStatusIncompletedNew, PromiseStatusCompletedSucceed) {
 		this.result = i
 		this.notifyAllWaiters()

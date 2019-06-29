@@ -25,20 +25,20 @@ type RoutinePerChannelEventLoop struct {
 	channel           types.Channel
 }
 
+func (this *RoutinePerChannelEventLoop) Execute(task types.Runnable) {
+	panic("implement me")
+}
+
 func (this *RoutinePerChannelEventLoop) IsShutDown() bool {
 	return this.closed
 }
 
-func (this *RoutinePerChannelEventLoop) ShutdownGracefully() types.Future {
+func (this *RoutinePerChannelEventLoop) ShutdownGracefully() types.ChannelFutrue {
 	this.closed = true
-	this.complete <- nil
-
-}
-
-func (this *RoutinePerChannelEventLoop) AwaitTermination() bool {
-	this.closed = true
-	this.complete <- nil
-	return true
+	//this.complete <- nil
+	close(this.tasks)
+	// todo
+	return nil
 }
 
 func (this *RoutinePerChannelEventLoop) Next() types.EventLoop {
@@ -46,8 +46,10 @@ func (this *RoutinePerChannelEventLoop) Next() types.EventLoop {
 }
 
 func (this *RoutinePerChannelEventLoop) Register(channel types.Channel) types.ChannelFutrue {
-	channel.Unsafe().Register(this,nil)
+	promise := concurrent.NewDefaultChannelPromise(channel)
+	channel.Unsafe().Register(this, promise)
 	this.channel = channel
+	return promise
 }
 
 func (this *RoutinePerChannelEventLoop) Register0(promise types.ChannelPromise) types.ChannelFutrue {
@@ -84,7 +86,7 @@ func (this *RoutinePerChannelEventLoop) run() {
 				return
 			}
 			promise.Run()
-			promise.SetSuccess(nil)
+			promise.SetSuccess()
 			break
 		case err := <-this.complete:
 			if err != nil {

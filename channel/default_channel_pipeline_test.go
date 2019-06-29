@@ -1,4 +1,6 @@
-package main
+//Created by zhbinary on 2019-06-17.
+//Email: zhbinary@gmail.com
+package channel
 
 import (
 	"fmt"
@@ -6,9 +8,10 @@ import (
 	"github.com/zhbinary/heng/channel/embedded"
 	"github.com/zhbinary/heng/handler"
 	"github.com/zhbinary/heng/types"
+	"testing"
 )
 
-func main() {
+func TestDefaultChannelPipeline_FireChannelActive(t *testing.T) {
 	byteBuf := buffer.NewHeapBytebuf(1024)
 	for i := 0; i < 9; i++ {
 		byteBuf.WriteUint8(uint8(i))
@@ -16,11 +19,11 @@ func main() {
 
 	ch := embedded.NewChannel(&In1{})
 	if !ch.WriteInbound(byteBuf) {
-		fmt.Println("err")
+		t.Error()
 	}
 
 	if !ch.Finish() {
-		fmt.Println("err")
+		t.Error()
 	}
 }
 
@@ -30,10 +33,4 @@ type In1 struct {
 
 func (this *In1) ChannelActive(ctx types.ChannelHandlerContext) {
 	fmt.Println("In1 ChannelActive")
-	ctx.FireChannelActive()
-}
-
-func (this *In1) ChannelRead(ctx types.ChannelHandlerContext, msg interface{}) () {
-	fmt.Println("In1 ChannelRead", msg)
-	ctx.FireChannelRead(msg)
 }

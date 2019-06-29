@@ -2,4 +2,4 @@
 //Email: zhbinary@gmail.com
 package types
 
-type Task func()
+type Runnable func()
