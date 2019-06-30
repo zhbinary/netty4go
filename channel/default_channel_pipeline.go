@@ -14,7 +14,7 @@ type DefaultChannelPipeline struct {
 }
 
 func NewDefaultChannelPipeline(channel types.Channel) *DefaultChannelPipeline {
-	//if Channel == nil {
+	//if channelBundle == nil {
 	//	
 	//}
 	pipeline := &DefaultChannelPipeline{channel: channel}

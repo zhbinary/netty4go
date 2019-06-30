@@ -6,7 +6,7 @@ type ChannelHandlerContext interface {
 	ChannelInboundInvoker
 	ChannelOutboundInvoker
 	/**
-	* Return the {@link Channel} which is bound to the {@link ChannelHandlerContext}.
+	* Return the {@link channel} which is bound to the {@link ChannelHandlerContext}.
 	 */
 	Channel() Channel
 

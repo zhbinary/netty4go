@@ -5,7 +5,6 @@ package channel
 import (
 	"context"
 	"errors"
-	"github.com/sirupsen/logrus"
 	"github.com/zhbinary/heng/concurrent"
 	"github.com/zhbinary/heng/types"
 	"sync"
@@ -90,7 +89,7 @@ func (this *RoutinePerChannelEventLoop) run() {
 			break
 		case err := <-this.complete:
 			if err != nil {
-				logrus.Errorf("Event loop exit err:%d\n", err)
+				//logrus.Errorf("Event loop exit err:%d\n", err)
 			}
 			return
 		}

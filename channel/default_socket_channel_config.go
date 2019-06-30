@@ -3,5 +3,5 @@
 package channel
 
 type DefaultSocketChannelConfig struct {
-	//Channel.DefaultChannelConfig
+	//channelBundle.DefaultChannelConfig
 }

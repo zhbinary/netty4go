@@ -17,13 +17,13 @@ type AbstractChannel struct {
 	pipeline   *DefaultChannelPipeline
 	unsafe     types.Unsafe
 
-	DoRegister   func() error
-	DoBind       func() error
-	DoDisconnect func() error
-	DoClose      func() error
-	DoDeregister func() error
-	DoBeginRead  func() error
-	DoWrite      func(buffer *buffer.OutboundBuffer) error
+	//DoRegister   func() error
+	//DoBind       func() error
+	//DoDisconnect func() error
+	//DoClose      func() error
+	//DoDeregister func() error
+	//DoBeginRead  func() error
+	//DoWrite      func(buffer *buffer.OutboundBuffer) error
 }
 
 func NewAbstractChannel(id string, loop types.EventLoop, parent types.Channel, unsafe types.Unsafe) *AbstractChannel {
@@ -145,12 +145,12 @@ func (this *AbstractChannel) Pipeline() types.ChannelPipeline {
 }
 
 type AbstractUnsafe struct {
-	Channel types.Channel
-	Buffer  *buffer.OutboundBuffer
+	channelBundle types.ChannelBundle
+	buffer        *buffer.OutboundBuffer
 }
 
-func NewAbstractUnsafe(channel types.Channel) *AbstractUnsafe {
-	return &AbstractUnsafe{Channel: channel, Buffer: &buffer.OutboundBuffer{}}
+func NewAbstractUnsafe(channelBundle types.ChannelBundle) *AbstractUnsafe {
+	return &AbstractUnsafe{channelBundle: channelBundle, buffer: &buffer.OutboundBuffer{}}
 }
 
 func (this *AbstractUnsafe) LocalAddress() net.Addr {
@@ -166,23 +166,23 @@ func (this *AbstractUnsafe) Register(eventLoop types.EventLoop, promise types.Ch
 		promise.SetFailure(errors.New("eventLoop is nil"))
 	}
 
-	ch := this.Channel.(*AbstractChannel)
-	if !ch.IsActive() {
+	if !this.channelBundle.IsActive() {
 		promise.SetFailure(errors.New("registered to an event loop already"))
 	}
 
-	this.Channel.eventLoop = eventLoop
-	if err := this.Channel.DoRegister(); err != nil {
+	this.channelBundle.SetEventLoop(eventLoop)
+	//this.channelBundle.eventLoop = eventLoop
+	if err := this.channelBundle.DoRegister(); err != nil {
 		promise.SetFailure(err)
 	} else {
 		promise.SetSuccess()
 	}
 
-	this.Channel.Pipeline().FireChannelRegistered()
+	this.channelBundle.Pipeline().FireChannelRegistered()
 }
 
 func (this *AbstractUnsafe) Bind(localAddress net.Addr, promise types.ChannelPromise) {
-	if err := this.Channel.DoBind; err != nil {
+	if err := this.channelBundle.DoBind; err != nil {
 		promise.SetFailure(err())
 	} else {
 		promise.SetSuccess()
@@ -194,7 +194,7 @@ func (this *AbstractUnsafe) Connect(remoteAddress net.Addr, localAddress net.Add
 }
 
 func (this *AbstractUnsafe) Disconnect(promise types.ChannelPromise) {
-	if err := this.Channel.DoDisconnect; err != nil {
+	if err := this.channelBundle.DoDisconnect; err != nil {
 		promise.SetFailure(err())
 	} else {
 		promise.SetSuccess()
@@ -202,7 +202,7 @@ func (this *AbstractUnsafe) Disconnect(promise types.ChannelPromise) {
 }
 
 func (this *AbstractUnsafe) Close(promise types.ChannelPromise) {
-	if err := this.Channel.DoClose; err != nil {
+	if err := this.channelBundle.DoClose; err != nil {
 		promise.SetFailure(err())
 	} else {
 		promise.SetSuccess()
@@ -210,46 +210,46 @@ func (this *AbstractUnsafe) Close(promise types.ChannelPromise) {
 }
 
 func (this *AbstractUnsafe) CloseForcibly() {
-	this.Channel.DoClose()
+	this.channelBundle.DoClose()
 }
 
 func (this *AbstractUnsafe) Deregister(promise types.ChannelPromise) {
-	if err := this.Channel.DoDeregister(); err != nil {
+	if err := this.channelBundle.DoDeregister(); err != nil {
 		promise.SetFailure(err)
 	} else {
 		promise.SetSuccess()
-		if this.Channel.IsActive() {
-			this.Channel.Pipeline().FireChannelInactive()
+		if this.channelBundle.IsActive() {
+			this.channelBundle.Pipeline().FireChannelInactive()
 		}
 
-		if this.Channel.IsRegistered() {
-			this.Channel.Pipeline().FireChannelUnregistered()
+		if this.channelBundle.IsRegistered() {
+			this.channelBundle.Pipeline().FireChannelUnregistered()
 		}
 	}
 }
 
 func (this *AbstractUnsafe) BeginRead() {
-	if !this.Channel.IsActive() {
+	if !this.channelBundle.IsActive() {
 		return
 	}
 
-	if err := this.Channel.DoBeginRead(); err != nil {
-		this.Channel.Pipeline().FireExceptionCaught(err)
+	if err := this.channelBundle.DoBeginRead(); err != nil {
+		this.channelBundle.Pipeline().FireExceptionCaught(err)
 	}
 }
 
 func (this *AbstractUnsafe) Write(msg interface{}, promise types.ChannelPromise) {
-	this.Buffer.AddMessage(msg, promise)
+	this.buffer.AddMessage(msg, promise)
 }
 
 func (this *AbstractUnsafe) Flush() {
-	if err := this.Channel.DoWrite(this.Buffer); err != nil {
+	if err := this.channelBundle.DoWrite(this.buffer); err != nil {
 	}
 }
 
 //type AbstractUnsafe struct {
-//	Channel *AbstractChannel
-//	Buffer  *buffer.OutboundBuffer
+//	channelBundle *AbstractChannel
+//	buffer  *buffer.OutboundBuffer
 //}
 //
 //func (this *AbstractUnsafe) LocalAddress() net.Addr {
@@ -265,22 +265,22 @@ func (this *AbstractUnsafe) Flush() {
 //		promise.SetFailure(errors.New("eventLoop is nil"))
 //	}
 //
-//	if !this.Channel.IsActive() {
+//	if !this.channelBundle.IsActive() {
 //		promise.SetFailure(errors.New("registered to an event loop already"))
 //	}
 //
-//	this.Channel.eventLoop = eventLoop
-//	if err := this.Channel.DoRegister(); err != nil {
+//	this.channelBundle.eventLoop = eventLoop
+//	if err := this.channelBundle.DoRegister(); err != nil {
 //		promise.SetFailure(err)
 //	} else {
 //		promise.SetSuccess()
 //	}
 //
-//	this.Channel.Pipeline().FireChannelRegistered()
+//	this.channelBundle.Pipeline().FireChannelRegistered()
 //}
 //
 //func (this *AbstractUnsafe) Bind(localAddress net.Addr, promise types.ChannelPromise) {
-//	if err := this.Channel.DoBind; err != nil {
+//	if err := this.channelBundle.DoBind; err != nil {
 //		promise.SetFailure(err())
 //	} else {
 //		promise.SetSuccess()
@@ -292,7 +292,7 @@ func (this *AbstractUnsafe) Flush() {
 //}
 //
 //func (this *AbstractUnsafe) Disconnect(promise types.ChannelPromise) {
-//	if err := this.Channel.DoDisconnect; err != nil {
+//	if err := this.channelBundle.DoDisconnect; err != nil {
 //		promise.SetFailure(err())
 //	} else {
 //		promise.SetSuccess()
@@ -300,7 +300,7 @@ func (this *AbstractUnsafe) Flush() {
 //}
 //
 //func (this *AbstractUnsafe) Close(promise types.ChannelPromise) {
-//	if err := this.Channel.DoClose; err != nil {
+//	if err := this.channelBundle.DoClose; err != nil {
 //		promise.SetFailure(err())
 //	} else {
 //		promise.SetSuccess()
@@ -308,39 +308,39 @@ func (this *AbstractUnsafe) Flush() {
 //}
 //
 //func (this *AbstractUnsafe) CloseForcibly() {
-//	this.Channel.DoClose()
+//	this.channelBundle.DoClose()
 //}
 //
 //func (this *AbstractUnsafe) Deregister(promise types.ChannelPromise) {
-//	if err := this.Channel.DoDeregister(); err != nil {
+//	if err := this.channelBundle.DoDeregister(); err != nil {
 //		promise.SetFailure(err)
 //	} else {
 //		promise.SetSuccess()
-//		if this.Channel.IsActive() {
-//			this.Channel.Pipeline().FireChannelInactive()
+//		if this.channelBundle.IsActive() {
+//			this.channelBundle.Pipeline().FireChannelInactive()
 //		}
 //
-//		if this.Channel.IsRegistered() {
-//			this.Channel.Pipeline().FireChannelUnregistered()
+//		if this.channelBundle.IsRegistered() {
+//			this.channelBundle.Pipeline().FireChannelUnregistered()
 //		}
 //	}
 //}
 //
 //func (this *AbstractUnsafe) BeginRead() {
-//	if !this.Channel.IsActive() {
+//	if !this.channelBundle.IsActive() {
 //		return
 //	}
 //
-//	if err := this.Channel.DoBeginRead(); err != nil {
-//		this.Channel.Pipeline().FireExceptionCaught(err)
+//	if err := this.channelBundle.DoBeginRead(); err != nil {
+//		this.channelBundle.Pipeline().FireExceptionCaught(err)
 //	}
 //}
 //
 //func (this *AbstractUnsafe) Write(msg interface{}, promise types.ChannelPromise) {
-//	this.Buffer.AddMessage(msg, promise)
+//	this.buffer.AddMessage(msg, promise)
 //}
 //
 //func (this *AbstractUnsafe) Flush() {
-//	if err := this.Channel.DoWrite(this.Buffer); err != nil {
+//	if err := this.channelBundle.DoWrite(this.buffer); err != nil {
 //	}
 //}

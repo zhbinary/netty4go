@@ -4,7 +4,6 @@ package embedded
 
 import (
 	"container/list"
-	"github.com/zhbinary/heng/buffer"
 	"github.com/zhbinary/heng/channel"
 	"github.com/zhbinary/heng/types"
 	"net"
@@ -26,7 +25,7 @@ type Channel struct {
 
 func NewChannel(handlers ...types.ChannelHandler) (ch *Channel) {
 	ch = &Channel{state: StateOpen, handlers: handlers}
-	unsafe := &Unsafe{AbstractUnsafe: &channel.AbstractUnsafe{Channel: ch.AbstractChannel, Buffer: &buffer.OutboundBuffer{}}}
+	unsafe := &Unsafe{AbstractUnsafe: channel.NewAbstractUnsafe(ch)}
 	ch.AbstractChannel = channel.NewAbstractChannel("", NewEventLoop(), nil, unsafe)
 	ch.initAbstractMethods()
 	ch.setup()
@@ -41,25 +40,25 @@ func (this *Channel) setup() {
 }
 
 func (this *Channel) initAbstractMethods() {
-	this.AbstractChannel.DoRegister = this.doRegister
-	this.AbstractChannel.DoBind = this.doBind
-	this.AbstractChannel.DoDisconnect = this.doDisconnect
-	this.AbstractChannel.DoClose = this.doClose
-	this.AbstractChannel.DoDeregister = this.doDeregister
-	this.AbstractChannel.DoBeginRead = this.doBeginRead
-	this.AbstractChannel.DoWrite = this.doWrite
+	//this.AbstractChannel.DoRegister = this.doRegister
+	//this.AbstractChannel.DoBind = this.doBind
+	//this.AbstractChannel.DoDisconnect = this.doDisconnect
+	//this.AbstractChannel.DoClose = this.doClose
+	//this.AbstractChannel.DoDeregister = this.doDeregister
+	//this.AbstractChannel.DoBeginRead = this.doBeginRead
+	//this.AbstractChannel.DoWrite = this.doWrite
 
 	pipeline := this.AbstractChannel.Pipeline().(*channel.DefaultChannelPipeline)
 	pipeline.OnUnhandledChannelRead = this.onUnHandledChannelRead
 }
 
-func (this *Channel) LocalAddress() net.Addr {
-	return nil
-}
-
-func (this *Channel) RemoteAddress() net.Addr {
-	return nil
-}
+//func (this *Channel) LocalAddress() net.Addr {
+//	return nil
+//}
+//
+//func (this *Channel) RemoteAddress() net.Addr {
+//	return nil
+//}
 
 func (this *Channel) IsOpen() bool {
 	return this.state == StateOpen
@@ -77,38 +76,42 @@ func (this *Channel) IsWritable() bool {
 	return true
 }
 
-func (this *Channel) doRegister() (err error) {
+func (this *Channel) DoRegister() (err error) {
 	this.state = StateActive
 	return
 }
 
-func (this *Channel) doBind() (err error) {
+func (this *Channel) DoBind() (err error) {
 	// Noop
 	return
 }
 
-func (this *Channel) doDisconnect() (err error) {
+func (this *Channel) SetEventLoop(loop types.EventLoop) {
+	//panic("implement me")
+}
+
+func (this *Channel) DoDisconnect() (err error) {
 	// Noop
-	this.doClose()
+	this.DoClose()
 	return
 }
 
-func (this *Channel) doClose() (err error) {
+func (this *Channel) DoClose() (err error) {
 	this.state = StateClosed
 	return
 }
 
-func (this *Channel) doDeregister() (err error) {
+func (this *Channel) DoDeregister() (err error) {
 	// Noop
 	return
 }
 
-func (this *Channel) doBeginRead() (err error) {
+func (this *Channel) DoBeginRead() (err error) {
 	this.EventLoop().(*EventLoop).run()
 	return
 }
 
-func (this *Channel) doWrite(buffer *buffer.OutboundBuffer) (err error) {
+func (this *Channel) DoWrite(buffer types.OutboundBuffer) (err error) {
 	for msg := buffer.Front(); msg != nil; msg = buffer.Front() {
 		this.outboundMessages.PushBack(msg)
 		buffer.RemoveFront()

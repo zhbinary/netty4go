@@ -5,23 +5,20 @@ import (
 )
 
 type Channel interface {
-	BaseChannel
 	ChannelOutboundInvoker
 
 	/**
 	 * Returns an <em>internal-use-only</em> object that provides unsafe operations.
 	 */
 	Unsafe() Unsafe
-}
 
-type BaseChannel interface {
 	/**
-	 * Returns the globally unique identifier of this {@link Channel}.
+	 * Returns the globally unique identifier of this {@link channel}.
 	 */
 	Id() string
 
 	/**
-	 * Return the {@link EventLoop} this {@link Channel} was registered to.
+	 * Return the {@link EventLoop} this {@link channel} was registered to.
 	 */
 	EventLoop() EventLoop
 
@@ -34,17 +31,17 @@ type BaseChannel interface {
 	Parent() Channel
 
 	/**
-	 * Returns {@code true} if the {@link Channel} is open and may get active later
+	 * Returns {@code true} if the {@link channel} is open and may get active later
 	 */
 	IsOpen() bool
 
 	/**
-	 * Returns {@code true} if the {@link Channel} is registered with an {@link EventLoop}.
+	 * Returns {@code true} if the {@link channel} is registered with an {@link EventLoop}.
 	 */
 	IsRegistered() bool
 
 	/**
-	 * Return {@code true} if the {@link Channel} is active and so connected.
+	 * Return {@code true} if the {@link channel} is active and so connected.
 	 */
 	IsActive() bool
 
@@ -91,23 +88,37 @@ type BaseChannel interface {
 	Config() ChannelConfig
 }
 
-type Unsafe interface {
-	BaseChannel
+type ChannelBundle interface {
+	Channel
+	ChannelInner
+}
 
+type ChannelInner interface {
+	SetEventLoop(loop EventLoop)
+	DoRegister() (err error)
+	DoBind() (err error)
+	DoDisconnect() (err error)
+	DoClose() (err error)
+	DoDeregister() (err error)
+	DoBeginRead() (err error)
+	DoWrite(buffer OutboundBuffer) (err error)
+}
+
+type Unsafe interface {
 	/**
-	 * Register the {@link Channel} of the {@link ChannelPromise} and notify
+	 * Register the {@link channel} of the {@link ChannelPromise} and notify
 	 * the {@link ChannelFuture} once the registration was complete.
 	 */
 	Register(eventLoop EventLoop, promise ChannelPromise)
 
 	/**
-	 * Bind the {@link SocketAddress} to the {@link Channel} of the {@link ChannelPromise} and notify
+	 * Bind the {@link SocketAddress} to the {@link channel} of the {@link ChannelPromise} and notify
 	 * it once its done.
 	 */
 	Bind(localAddress net.Addr, promise ChannelPromise)
 
 	/**
-	 * Connect the {@link Channel} of the given {@link ChannelFuture} with the given remote {@link SocketAddress}.
+	 * Connect the {@link channel} of the given {@link ChannelFuture} with the given remote {@link SocketAddress}.
 	 * If a specific local {@link SocketAddress} should be used it need to be given as argument. Otherwise just
 	 * pass {@code null} to it.
 	 *
@@ -116,25 +127,25 @@ type Unsafe interface {
 	Connect(remoteAddress net.Addr, localAddress net.Addr, promise ChannelPromise)
 
 	/**
-	 * Disconnect the {@link Channel} of the {@link ChannelFuture} and notify the {@link ChannelPromise} once the
+	 * Disconnect the {@link channel} of the {@link ChannelFuture} and notify the {@link ChannelPromise} once the
 	 * operation was complete.
 	 */
 	Disconnect(promise ChannelPromise)
 
 	/**
-	 * Close the {@link Channel} of the {@link ChannelPromise} and notify the {@link ChannelPromise} once the
+	 * Close the {@link channel} of the {@link ChannelPromise} and notify the {@link ChannelPromise} once the
 	 * operation was complete.
 	 */
 	Close(promise ChannelPromise)
 
 	/**
-	 * Closes the {@link Channel} immediately without firing any events.  Probably only useful
+	 * Closes the {@link channel} immediately without firing any events.  Probably only useful
 	 * when registration attempt failed.
 	 */
 	CloseForcibly()
 
 	/**
-	 * Deregister the {@link Channel} of the {@link ChannelPromise} from {@link EventLoop} and notify the
+	 * Deregister the {@link channel} of the {@link ChannelPromise} from {@link EventLoop} and notify the
 	 * {@link ChannelPromise} once the operation was complete.
 	 */
 	Deregister(promise ChannelPromise)
