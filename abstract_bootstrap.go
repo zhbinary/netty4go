@@ -3,7 +3,6 @@
 package heng
 
 import (
-	"github.com/zhbinary/heng/concurrent"
 	"github.com/zhbinary/heng/types"
 	"net"
 	"reflect"
@@ -21,14 +20,13 @@ type AbstractBootstrap struct {
 func (this *AbstractBootstrap) Bind(remote net.Addr) {
 	regFuture := this.initAndRegister()
 	channel := regFuture.Channel()
+	addr := &net.TCPAddr{IP: net.IP{}, Port: 8280}
 	if regFuture.IsDone() {
-		promise := concurrent.NewDefaultChannelPromise()
-		channel.Bind(, promise)
+		channel.Bind(addr)
 	} else {
-		regFuture.AddListener(func(future types.Future) {
-			promise := concurrent.NewDefaultChannelPromise()
-			channel.Bind(, promise)
-		})
+		regFuture.AddListener(&types.FutureListenerAdapter{OperationCompleteCb: func(future types.Future) {
+			channel.Bind(addr)
+		}})
 	}
 }
 
@@ -55,7 +53,5 @@ func (this *AbstractBootstrap) Handler(handler types.ChannelHandler) {
 func (this *AbstractBootstrap) initAndRegister() types.ChannelFutrue {
 	channel := this.newChannel()
 	this.initChannel(channel)
-
-	promise := concurrent.NewDefaultChannelPromise()
-	return this.group.Register(channel, promise)
+	return this.group.Register(channel)
 }

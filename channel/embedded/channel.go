@@ -40,14 +40,6 @@ func (this *Channel) setup() {
 }
 
 func (this *Channel) initAbstractMethods() {
-	//this.AbstractChannel.DoRegister = this.doRegister
-	//this.AbstractChannel.DoBind = this.doBind
-	//this.AbstractChannel.DoDisconnect = this.doDisconnect
-	//this.AbstractChannel.DoClose = this.doClose
-	//this.AbstractChannel.DoDeregister = this.doDeregister
-	//this.AbstractChannel.DoBeginRead = this.doBeginRead
-	//this.AbstractChannel.DoWrite = this.doWrite
-
 	pipeline := this.AbstractChannel.Pipeline().(*channel.DefaultChannelPipeline)
 	pipeline.OnUnhandledChannelRead = this.onUnHandledChannelRead
 }
