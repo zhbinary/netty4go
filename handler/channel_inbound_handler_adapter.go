@@ -10,6 +10,10 @@ type ChannelInboundHandlerAdapter struct {
 	*ChannelHandlerAdapter
 }
 
+func NewChannelInboundHandlerAdapter() *ChannelInboundHandlerAdapter {
+	return &ChannelInboundHandlerAdapter{ChannelHandlerAdapter: &ChannelHandlerAdapter{}}
+}
+
 func (this *ChannelInboundHandlerAdapter) ChannelRead(ctx types.ChannelHandlerContext, msg interface{}) {
 	ctx.FireChannelRead(msg)
 }

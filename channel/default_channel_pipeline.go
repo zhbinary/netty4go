@@ -1,6 +1,7 @@
 package channel
 
 import (
+	"github.com/zhbinary/heng/handler"
 	"github.com/zhbinary/heng/types"
 	"net"
 )
@@ -158,7 +159,9 @@ type TailContext struct {
 }
 
 func newTail(pipeline *DefaultChannelPipeline) (ctx *TailContext) {
-	return &TailContext{AbstractChannelHandlerContext: &AbstractChannelHandlerContext{pipeline: pipeline}}
+	ctx = &TailContext{AbstractChannelHandlerContext: &AbstractChannelHandlerContext{name: "tail", pipeline: pipeline, inbound: true}}
+	ctx.AbstractChannelHandlerContext.handler = ctx
+	return
 }
 
 func (this *TailContext) Handler() types.ChannelHandler {
@@ -201,11 +204,16 @@ func (this *TailContext) ExceptionCaught(ctx types.ChannelHandlerContext, err er
 
 type HeadContext struct {
 	*AbstractChannelHandlerContext
+	*handler.ChannelInboundHandlerAdapter
 	unsafe types.Unsafe
 }
 
 func newHead(pipeline *DefaultChannelPipeline) (ctx *HeadContext) {
-	return &HeadContext{AbstractChannelHandlerContext: &AbstractChannelHandlerContext{pipeline: pipeline}, unsafe: pipeline.channel.Unsafe()}
+	ctx = &HeadContext{AbstractChannelHandlerContext: &AbstractChannelHandlerContext{name: "Head", pipeline: pipeline, outbound: true},
+		unsafe:                       pipeline.channel.Unsafe(),
+		ChannelInboundHandlerAdapter: handler.NewChannelInboundHandlerAdapter()}
+	ctx.AbstractChannelHandlerContext.handler = ctx
+	return
 }
 
 func (this *HeadContext) Handler() types.ChannelHandler {

@@ -134,8 +134,11 @@ func (this *Channel) WriteInbound(msgs ...interface{}) bool {
 
 func (this *Channel) ReadInbound() interface{} {
 	front := this.inboundMessages.Front()
+	if front == nil {
+		return nil
+	}
 	this.inboundMessages.Remove(front)
-	return front
+	return front.Value
 }
 
 func (this *Channel) WriteOutbound(msgs ...interface{}) bool {

@@ -25,6 +25,8 @@ type ByteBuf interface {
 	ResetWriterIndex()
 	DiscardReadBytes() (err error)
 	EnsureWritable(minWritableBytes int) (err error)
+	Duplicate() ByteBuf
+	String() string
 
 	GetBool(index int) (v bool, err error)
 	GetUint8(index int) (v uint8, err error)

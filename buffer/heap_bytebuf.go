@@ -696,3 +696,17 @@ func (this *HeapByteBuf) Array() []byte {
 func (this *HeapByteBuf) HasArray() bool {
 	return true
 }
+
+func (this *HeapByteBuf) Duplicate() (buf types.ByteBuf) {
+	buf = &HeapByteBuf{buf: this.buf,
+		readerIndex:       this.readerIndex,
+		writerIndex:       this.writerIndex,
+		markedReaderIndex: this.markedReaderIndex,
+		markedWriterIndex: this.markedWriterIndex,
+		maxCapacity:       this.maxCapacity,}
+	return
+}
+
+func (this *HeapByteBuf) String() string {
+	return string(this.ReadableArray())
+}
