@@ -11,6 +11,10 @@ type ChannelOutboundHandlerAdapter struct {
 	*ChannelHandlerAdapter
 }
 
+func NewChannelOutboundHandlerAdapter() *ChannelOutboundHandlerAdapter {
+	return &ChannelOutboundHandlerAdapter{ChannelHandlerAdapter: &ChannelHandlerAdapter{}}
+}
+
 func (this *ChannelOutboundHandlerAdapter) Bind(ctx types.ChannelHandlerContext, localAddress net.Addr, promise types.ChannelPromise) {
 	ctx.Bind0(localAddress, promise)
 }

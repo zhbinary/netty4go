@@ -8,9 +8,7 @@ import (
 
 type AbstractEventLoop struct {
 	parent types.EventLoopGroup
-	ch     chan types.Runnable
-	// implement by sub class
-	start func()
+	taskCh chan types.Runnable
 }
 
 func (this *AbstractEventLoop) IsShutDown() bool {
@@ -22,7 +20,7 @@ func (this *AbstractEventLoop) ShutdownGracefully() types.ChannelFutrue {
 }
 
 func (this *AbstractEventLoop) Next() types.EventLoop {
-	panic("implement me")
+	return this.parent.Next()
 }
 
 func (this *AbstractEventLoop) Register(channel types.Channel) types.ChannelFutrue {
@@ -42,9 +40,20 @@ func (this *AbstractEventLoop) Submit(task types.Runnable) types.Future {
 }
 
 func (this *AbstractEventLoop) Execute(task types.Runnable) {
-	this.ch <- task
+	this.taskCh <- task
 }
 
 func (this *AbstractEventLoop) Parent() types.EventLoopGroup {
 	return this.parent
+}
+
+func (this *AbstractEventLoop) startRoutine() {
+	for {
+		select {
+		case task := <-this.taskCh:
+			if task != nil {
+				task()
+			}
+		}
+	}
 }

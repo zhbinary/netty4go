@@ -9,64 +9,38 @@ import (
 )
 
 type SocketChannel struct {
-	channel.AbstractSocketChannel
+	channel.AbstractChannel
 	tcpConn *net.TCPConn
 }
 
-func (this *SocketChannel) IsActive() bool {
-	panic(types.ErrUnsupportedOperation)
-}
-
-func (this *SocketChannel) IsOpen() bool {
+func (this *SocketChannel) SetEventLoop(loop types.EventLoop) {
 	panic("implement me")
 }
 
-func (this *SocketChannel) IsRegistered() bool {
+func (this *SocketChannel) DoRegister() (err error) {
 	panic("implement me")
 }
 
-func (this *SocketChannel) localAddress() net.Addr {
-	return this.tcpConn.LocalAddr()
-}
-
-func (this *SocketChannel) remoteAddress() net.Addr {
-	this.tcpConn.RemoteAddr()
-}
-
-func (this *SocketChannel) doRegister() error {
+func (this *SocketChannel) DoBind() (err error) {
 	panic("implement me")
 }
 
-func (this *SocketChannel) doDeRegister() error {
+func (this *SocketChannel) DoDisconnect() (err error) {
 	panic("implement me")
 }
 
-func (this *SocketChannel) doBind(localAddress net.Addr) error {
+func (this *SocketChannel) DoClose() (err error) {
 	panic("implement me")
 }
 
-func (this *SocketChannel) doConnect(localAddress net.Addr, remoteAddress net.Addr) (err error) {
-	this.tcpConn, err = net.DialTCP("tcp", localAddress.(*net.TCPAddr), remoteAddress.(*net.TCPAddr))
-	return
+func (this *SocketChannel) DoDeregister() (err error) {
+	panic("implement me")
 }
 
-func (this *SocketChannel) doDisconnect() error {
-	return this.doClose()
+func (this *SocketChannel) DoBeginRead() (err error) {
+	panic("implement me")
 }
 
-func (this *SocketChannel) doClose() error {
-	return this.tcpConn.Close()
-}
-
-func (this *SocketChannel) doBeginRead() error {
-	buf := this.Config().GetByteBuf()
-	_, err := buf.ReadOnce(this.tcpConn)
-	if err != nil {
-		return err
-	}
-	this.Pipeline().FireChannelRead(buf)
-}
-
-func (this *SocketChannel) newUnsafe() types.Unsafe {
-	return &DefaultUnsafe{}
+func (this *SocketChannel) DoWrite(buffer types.OutboundBuffer) (err error) {
+	panic("implement me")
 }
