@@ -13,19 +13,24 @@ type OutboundBuffer struct {
 }
 
 func (this *OutboundBuffer) AddMessage(msg interface{}, promise types.ChannelPromise) {
-	this.list.PushBack(&OutboundEntry{msg: msg, promise: promise})
+	this.list.PushBack(&OutboundEntry{Msg: msg, Promise: promise})
 }
 
 func (this *OutboundBuffer) Front() interface{} {
 	this.front = this.list.Front()
+	if this.front == nil {
+		return nil
+	}
 	return this.front.Value
 }
 
 func (this *OutboundBuffer) RemoveFront() {
-	this.list.Remove(this.front)
+	if this.front != nil {
+		this.list.Remove(this.front)
+	}
 }
 
 type OutboundEntry struct {
-	msg     interface{}
-	promise types.ChannelPromise
+	Msg     interface{}
+	Promise types.ChannelPromise
 }

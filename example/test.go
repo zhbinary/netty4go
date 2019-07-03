@@ -37,10 +37,10 @@ func main() {
 
 	byteBufOut := buffer.NewHeapBytebuf(1024)
 	for i := 0; i < 9; i++ {
-		byteBuf.WriteUint8(uint8(i))
+		byteBufOut.WriteUint8(uint8(i))
 	}
 
-	output := byteBuf.Duplicate()
+	output := byteBufOut.Duplicate()
 	if !ch.WriteOutbound(output) {
 		fmt.Println("err")
 	}
@@ -51,7 +51,7 @@ func main() {
 
 	readOut := ch.ReadOutbound().(types.ByteBuf)
 	if !reflect.DeepEqual(byteBufOut.ReadableArray(), readOut.ReadableArray()) {
-		fmt.Println("err buf")
+		fmt.Println("err buf, isn't equal")
 	}
 
 	if ch.ReadOutbound() != nil {
@@ -72,7 +72,7 @@ func (this *In1) ChannelActive(ctx types.ChannelHandlerContext) {
 	ctx.FireChannelActive()
 }
 
-func (this *In1) ChannelRead(ctx types.ChannelHandlerContext, msg interface{}) () {
+func (this *In1) ChannelRead(ctx types.ChannelHandlerContext, msg interface{}) {
 	bf := msg.(types.ByteBuf)
 	fmt.Println("In1 ChannelRead", bf.String())
 	ctx.FireChannelRead(msg)

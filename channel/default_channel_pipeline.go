@@ -16,7 +16,7 @@ type DefaultChannelPipeline struct {
 
 func NewDefaultChannelPipeline(channel types.Channel) *DefaultChannelPipeline {
 	//if channelBundle == nil {
-	//	
+	//
 	//}
 	pipeline := &DefaultChannelPipeline{channel: channel}
 	pipeline.initAbstractMethods()
@@ -54,15 +54,15 @@ func (this *DefaultChannelPipeline) FireChannelActive() {
 }
 
 func (this *DefaultChannelPipeline) FireChannelInactive() {
-	panic("implement me")
+	this.head.invokeChannelInactive()
 }
 
 func (this *DefaultChannelPipeline) FireExceptionCaught(err error) {
-	panic("implement me")
+	this.head.invokeExceptionCaught(err)
 }
 
 func (this *DefaultChannelPipeline) FireUserEventTriggered(evt interface{}) {
-	panic("implement me")
+	this.head.invokeUserEventTriggered(evt)
 }
 
 func (this *DefaultChannelPipeline) FireChannelRead(msg interface{}) {
@@ -74,31 +74,31 @@ func (this *DefaultChannelPipeline) FireChannelReadComplete() {
 }
 
 func (this *DefaultChannelPipeline) FireChannelWritabilityChanged() {
-	panic("implement me")
+	this.head.invokeChannelWritabilityChanged()
 }
 
 func (this *DefaultChannelPipeline) Bind(localAddress net.Addr) types.ChannelFutrue {
-	panic("implement me")
+	return this.tail.Bind(localAddress)
 }
 
 func (this *DefaultChannelPipeline) Bind0(localAddress net.Addr, promise types.ChannelPromise) types.ChannelFutrue {
-	panic("implement me")
+	return this.tail.Bind0(localAddress, promise)
 }
 
 func (this *DefaultChannelPipeline) Connect(localAddress net.Addr, remoteAddress net.Addr) types.ChannelFutrue {
-	panic("implement me")
+	return this.tail.Connect(localAddress, remoteAddress)
 }
 
 func (this *DefaultChannelPipeline) Connect0(localAddress net.Addr, remoteAddress net.Addr, promise types.ChannelPromise) types.ChannelFutrue {
-	panic("implement me")
+	return this.tail.Connect0(localAddress, remoteAddress, promise)
 }
 
 func (this *DefaultChannelPipeline) Disconnect() types.ChannelFutrue {
-	panic("implement me")
+	return this.tail.Disconnect()
 }
 
 func (this *DefaultChannelPipeline) Disconnect0(promise types.ChannelPromise) types.ChannelFutrue {
-	panic("implement me")
+	return this.tail.Disconnect0(promise)
 }
 
 func (this *DefaultChannelPipeline) Close() types.ChannelFutrue {
@@ -106,39 +106,39 @@ func (this *DefaultChannelPipeline) Close() types.ChannelFutrue {
 }
 
 func (this *DefaultChannelPipeline) Close0(promise types.ChannelPromise) types.ChannelFutrue {
-	panic("implement me")
+	return this.tail.Close0(promise)
 }
 
 func (this *DefaultChannelPipeline) Deregister() types.ChannelFutrue {
-	panic("implement me")
+	return this.tail.Deregister()
 }
 
 func (this *DefaultChannelPipeline) Deregister0(promise types.ChannelPromise) types.ChannelFutrue {
-	panic("implement me")
+	return this.tail.Deregister0(promise)
 }
 
 func (this *DefaultChannelPipeline) Read() {
-	panic("implement me")
+	this.tail.Read()
 }
 
 func (this *DefaultChannelPipeline) Write(msg interface{}) types.ChannelFutrue {
-	panic("implement me")
+	return this.tail.Write(msg)
 }
 
 func (this *DefaultChannelPipeline) Write0(msg interface{}, promise types.ChannelPromise) types.ChannelFutrue {
-	panic("implement me")
+	return this.tail.Write0(msg, promise)
 }
 
 func (this *DefaultChannelPipeline) WriteAndFlush(msg interface{}) types.ChannelFutrue {
-	panic("implement me")
+	return this.tail.WriteAndFlush(msg)
 }
 
 func (this *DefaultChannelPipeline) WriteAndFlush0(msg interface{}, promise types.ChannelPromise) types.ChannelFutrue {
-	panic("implement me")
+	return this.tail.WriteAndFlush0(msg, promise)
 }
 
 func (this *DefaultChannelPipeline) Flush() {
-	panic("implement me")
+	this.tail.Flush()
 }
 
 func (this *DefaultChannelPipeline) AddLast(name string, handler types.ChannelHandler) {

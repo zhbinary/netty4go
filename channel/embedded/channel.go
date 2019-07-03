@@ -4,6 +4,7 @@ package embedded
 
 import (
 	"container/list"
+	"github.com/zhbinary/heng/buffer"
 	"github.com/zhbinary/heng/channel"
 	"github.com/zhbinary/heng/types"
 	"net"
@@ -138,18 +139,22 @@ func (this *Channel) WriteOutbound(msgs ...interface{}) bool {
 		this.Write(msg)
 	}
 
+	this.Flush()
+
 	if this.outboundMessages.Len() == 0 {
 		return false
 	}
-
-	this.Flush()
 	return true
 }
 
 func (this *Channel) ReadOutbound() interface{} {
 	front := this.outboundMessages.Front()
+	if front == nil {
+		return nil
+	}
 	this.outboundMessages.Remove(front)
-	return front
+	entry := front.Value.(*buffer.OutboundEntry)
+	return entry.Msg
 }
 
 func (this *Channel) Finish() bool {
