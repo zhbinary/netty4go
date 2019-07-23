@@ -1,4 +1,5 @@
-# heng
-基于GO的轻量级 高性能网络IO框架
+# What is Netty4go
+An golang-based implementation of netty
 
-# heng
+# What does netty4go can do?
+* 
