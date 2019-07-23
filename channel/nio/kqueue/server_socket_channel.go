@@ -5,7 +5,7 @@ package kqueue
 import "syscall"
 
 type ServerSocketChannel struct {
-	AbstractSocketChannel
+	*AbstractSocketChannel
 }
 
 func NewServerSocketChannel() *ServerSocketChannel {
@@ -13,7 +13,7 @@ func NewServerSocketChannel() *ServerSocketChannel {
 	return ret
 }
 
-func (this *ServerSocketChannel) pollReadReady() {
+func (this *ServerSocketChannel) doRead() {
 	for {
 		nfd, _, err := syscall.Accept(this.fd)
 		if err != nil {
@@ -29,7 +29,7 @@ func (this *ServerSocketChannel) pollReadReady() {
 			// Close channel
 			return
 		}
-		Pipeline().FireChannelRead(nfd)
+		this.Pipeline().FireChannelRead(nfd)
 	}
-	Pipeline().FireChannelReadComplete()
+	this.Pipeline().FireChannelReadComplete()
 }

@@ -2,50 +2,63 @@
 package kqueue
 
 import (
+	"github.com/zhbinary/heng/buffer"
+	"github.com/zhbinary/heng/concurrent"
 	"github.com/zhbinary/heng/types"
 	"syscall"
 )
 
 type EventLoop struct {
-	ch       chan types.Task
-	parent   types.EventLoopGroup
-	netPoll  *NetPoll
-	channels map[uint64]*AbstractSocketChannel
+	parent          types.EventLoopGroup
+	tasks           chan types.Runnable
+	kqFd            int
+	changes, events []syscall.Kevent_t
+	channels        map[uint64]types.Channel
 }
 
-func NewEventLoop() (*EventLoop, error) {
-	el := &EventLoop{}
-	poll, err := NewPoll()
+func NewEventLoop() (el *EventLoop, err error) {
+	fd, err := syscall.Kqueue()
 	if err != nil {
-		return nil, err
+		return
 	}
-	el.ch = make(chan types.Task)
-	el.netPoll = poll
-	return el, nil
+	el = &EventLoop{tasks: make(chan types.Runnable), kqFd: fd}
+	return
 }
 
 func (this *EventLoop) IsShutDown() bool {
 	panic("implement me")
 }
 
-func (this *EventLoop) ShutdownGracefully(promise types.ChannelPromise) types.Future {
-	panic("implement me")
-}
-
-func (this *EventLoop) AwaitTermination() bool {
+func (this *EventLoop) ShutdownGracefully() types.ChannelFutrue {
 	panic("implement me")
 }
 
 func (this *EventLoop) Next() types.EventLoop {
+	return this.parent.Next()
+}
+
+func (this *EventLoop) Register(channel types.Channel) types.ChannelFutrue {
+	promise := concurrent.NewDefaultChannelPromise(channel)
+	this.Register0(promise)
+	return promise
+}
+
+func (this *EventLoop) Register0(promise types.ChannelPromise) types.ChannelFutrue {
+	promise.Channel().Unsafe().Register(this, promise)
+	return promise
+}
+
+func (this *EventLoop) Register1(channel types.Channel, promise types.ChannelPromise) types.ChannelFutrue {
+	channel.Unsafe().Register(this, promise)
+	return promise
+}
+
+func (this *EventLoop) Submit(task types.Runnable) types.Future {
 	panic("implement me")
 }
 
-func (this *EventLoop) Register(channel types.Channel, promise types.ChannelPromise) types.ChannelFutrue {
-	channel.Unsafe().Register(this, promise)
-}
-
-func (this *EventLoop) Submit(task types.Task, promise types.ChannelPromise) types.Future {
-	this.ch <- task
+func (this *EventLoop) Execute(task types.Runnable) {
+	this.tasks <- task
 }
 
 func (this *EventLoop) Parent() types.EventLoopGroup {
@@ -53,34 +66,49 @@ func (this *EventLoop) Parent() types.EventLoopGroup {
 }
 
 func (this *EventLoop) run() {
+	var timeout *syscall.Timespec
 	for {
-		select {
-		case task := <-this.ch:
-			task()
-		default:
-			PollWait(func(fd uint64, filter int16, data interface{}) {
-				if filter == syscall.EVFILT_READ {
-					pollReadReady()
-				} else if filter == syscall.EVFILT_WRITE {
-					pollWriteReady()
-				}
-			})
+		n, err := syscall.Kevent(this.kqFd, this.changes, this.events, timeout)
+		if err != nil {
+
+		}
+
+		if n > 0 {
+			this.processKeys()
+		}
+
+	}
+
+	this.cleanChanges()
+}
+
+func (this *EventLoop) addRead(fd uint64) {
+	event := syscall.Kevent_t{Ident: fd, Filter: syscall.EVFILT_READ, Flags: syscall.EV_ADD}
+	this.changes = append(this.changes, event)
+}
+
+func (this *EventLoop) processKeys() {
+	for _, event := range this.events {
+		switch event.Filter {
+		case syscall.EVFILT_READ:
+			this.readReady(&event)
+		case syscall.EVFILT_WRITE:
 		}
 	}
 }
 
-func (this *EventLoop) add(channel *AbstractSocketChannel) error {
-	this.channels[Fd()] = channel
-	PollAddRead(Fd())
-	return nil
+func (this *EventLoop) readReady(event *syscall.Kevent_t) {
+	// Pass data to pipeline
+	channel := this.channels[event.Ident]
+
+	buf := buffer.NewHeapBytebuf(int(event.Data))
+	// Read through unsafe
 }
 
-func (this *EventLoop) mod(channel *AbstractSocketChannel) error {
-	PollAddRead(Fd())
-	return nil
+func (this *EventLoop) writeReady() {
+	// flush out buffer to socket
 }
 
-func (this *EventLoop) del(channel *AbstractSocketChannel) error {
-	delete(this.channels, Fd())
-	return nil
+func (this *EventLoop) cleanChanges() {
+	this.changes = nil
 }
