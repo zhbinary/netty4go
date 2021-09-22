@@ -22,6 +22,10 @@ func NewHeapBytebuf(capacity int) types.ByteBuf {
 	return &HeapByteBuf{buf: make([]byte, capacity), maxCapacity: capacity}
 }
 
+func NewHeapBytebufByBuf(buf []byte) types.ByteBuf {
+	return &HeapByteBuf{buf: buf, maxCapacity: len(buf)}
+}
+
 func (this *HeapByteBuf) Capacity() int {
 	return cap(this.buf)
 }
